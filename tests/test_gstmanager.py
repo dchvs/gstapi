@@ -2,13 +2,15 @@
 
 import unittest
 
+from ..gstmanager import GstManager
+
 
 class GstManagerTests(unittest.TestCase):
-    def setUp(self) -> None:
-        pass
+    def setUp(self):
+        self.GstManager = GstManager()
 
     def test_start(self):
-        pass
+        self.GstManager.start()
 
     def test_stop(self):
-        pass
+        self.GstManager.stop()
