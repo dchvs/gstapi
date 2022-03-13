@@ -24,13 +24,19 @@ class GstManager:
 
     Attributes
     ----------
+    gst_app : Gst.Pipeline
+        The GStreamer application object.
 
     Methods
     -------
+    make()
+        Make the GStreamer application object.
     start()
         Start the GStreamer application.
     stop()
         Stop the GStreamer application.
+    get_state():
+        Getter for the Gstreamer application state.
 
     Raises
     ------
@@ -38,9 +44,17 @@ class GstManager:
         This class custom exception.
     """
 
-    def __init__(self):
+    def __init__(self, desc):
+        """
+         Parameters
+         ----------
+        _gst_app : Gst.Pipeline
+            The GStreamer application object.
+         """
         Gst.init(None)
         GLib.MainLoop()
+
+        self._gst_app = self.make(desc)
 
     @classmethod
     def make(cls, desc):
@@ -51,16 +65,23 @@ class GstManager:
         desc : str
             The description of the application process to make.
 
+        Returns
+        -------
+        gst_app : Gst.Pipeline
+            The GStreamer application object.
+
         Raises
         ------
         GstManagerError
             If unable to make the GStreamer application process.
         """
         try:
-            Gst.parse_launch(desc)
+            gst_app = Gst.parse_launch(desc)
         except BaseException:
             raise GstManagerError(
                 'Unable to make the GStreamer application process.')
+
+        return gst_app
 
     def start(self):
         """Start the GStreamer application.
@@ -74,7 +95,7 @@ class GstManager:
             If unable to start the GStreamer application.
         """
         try:
-            print("Starting the GStreamer application.")
+            self._gst_app.set_state(Gst.State.PLAYING)
         except BaseException:
             GstManagerError('Unable to start the GStreamer application')
 
@@ -90,6 +111,23 @@ class GstManager:
             If unable to stop the GStreamer application.
         """
         try:
-            print("Stopping the GStreamer application.")
+            self._gst_app.set_state(Gst.State.NULL)
         except BaseException:
             GstManagerError('Unable to stop the GStreamer application')
+
+    def get_state(self):
+        """Getter for the Gstreamer application state.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        state : Gst.State
+            The GStreamer application state.
+
+        Raises
+        ------
+        """
+        state = self._gst_app.get_state(Gst.CLOCK_TIME_NONE)[1]
+        return state
