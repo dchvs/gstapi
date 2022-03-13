@@ -30,3 +30,6 @@ class GstManagerTests(unittest.TestCase):
     def test_stop(self):
         self.GstManager.stop()
         self.assertEqual(Gst.State.NULL, self.GstManager.get_state())
+
+    def test_get_state(self):
+        self.assertIsInstance(self.GstManager.get_state(), Gst.State)
