@@ -39,7 +39,28 @@ class GstManager:
     """
 
     def __init__(self):
-        pass
+        Gst.init(None)
+        GLib.MainLoop()
+
+    @classmethod
+    def make(cls, desc):
+        """Make the GStreamer application process.
+
+        Parameters
+        ----------
+        desc : str
+            The description of the application process to make.
+
+        Raises
+        ------
+        GstManagerError
+            If unable to make the GStreamer application process.
+        """
+        try:
+            Gst.parse_launch(desc)
+        except BaseException:
+            raise GstManagerError(
+                'Unable to make the GStreamer application process.')
 
     def start(self):
         """Start the GStreamer application.
