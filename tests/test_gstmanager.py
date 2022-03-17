@@ -3,7 +3,6 @@
 import unittest
 
 import gi
-from gi.repository import GLib
 
 try:
     gi.require_version('Gst', '1.0')
@@ -21,7 +20,9 @@ class GstManagerTests(unittest.TestCase):
         self.GstManager = GstManager('videotestsrc ! fakesink')
 
     def test_make(self):
-        GstManager.make('videotestsrc ! fakesink')
+        self.assertIsInstance(
+            GstManager.make('videotestsrc ! fakesink'),
+            Gst.Pipeline)
 
     def test_start(self):
         self.GstManager.start()
