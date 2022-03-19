@@ -12,7 +12,7 @@ except BaseException:
 else:
     _gstreamerAvailable, args = Gst.init_check(None)
 
-from gstreamer.gstmanager import GstManager
+from gstapi.gstreamer.gstmanager import GstManager
 
 
 class GstManagerTests(unittest.TestCase):
