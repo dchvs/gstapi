@@ -95,7 +95,7 @@ class GstManager:
         """
         try:
             self._gst_app.set_state(Gst.State.PLAYING)
-            GLib.MainLoop.run()
+            GLib.MainLoop().run()
         except BaseException:
             GstManagerError('Unable to start the GStreamer application')
 
@@ -112,7 +112,7 @@ class GstManager:
         """
         try:
             self._gst_app.set_state(Gst.State.NULL)
-            GLib.MainLoop.quit()
+            GLib.MainLoop().quit()
         except BaseException:
             GstManagerError('Unable to stop the GStreamer application')
 
