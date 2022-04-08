@@ -16,6 +16,10 @@ class GstManagerError(RuntimeError):
     pass
 
 
+class GstAppManagerError(RuntimeError):
+    pass
+
+
 class GstManager:
     """
     Class that does the GStreamer operations.
@@ -132,3 +136,59 @@ class GstManager:
         """
         state = self._gst_app.get_state(Gst.CLOCK_TIME_NONE)[1]
         return state
+
+
+class GstAppManager(GstManager):
+    """
+    Class that does the GStreamer operations for applications with fed buffers.
+
+    ...
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+    pull_buffer()
+        Pull the GStreamer buffer from Appsink.
+
+    Raises
+    ------
+    GstAppManagerError
+        This class custom exception.
+    """
+
+    def __init__(self, desc):
+        """
+         Parameters
+         ----------
+         desc : str
+            The GStreamer pipeline description.
+
+        _gst_app : Gst.Pipeline
+            The GStreamer application object.
+         """
+
+        super().__init__(desc)
+
+    def pull_buffer(self):
+        """ Pull the GStreamer buffer from Appsink.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        buffer : Gst.Buffer
+            The GStreamer application buffer.
+
+        Raises
+        ------
+        GstAppManagerError
+            If unable to pull the GStreamer buffer from Appsink.
+        """
+        try:
+            self.appsink = self._gst_app.get_by_name('appsink')
+        except BaseException:
+            raise GstManagerError(
+                'Unable to pull the GStreamer buffer from Appsink.')

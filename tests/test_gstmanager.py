@@ -12,7 +12,7 @@ except BaseException:
 else:
     _gstreamerAvailable, args = Gst.init_check(None)
 
-from gstapi.gstreamer.gstmanager import GstManager
+from gstapi.gstreamer.gstmanager import GstManager, GstAppManager
 
 
 class GstManagerTests(unittest.TestCase):
@@ -34,3 +34,13 @@ class GstManagerTests(unittest.TestCase):
 
     def test_get_state(self):
         self.assertIsInstance(self.GstManager.get_state(), Gst.State)
+
+
+class GstAppManagerTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.GstAppManager = GstAppManager(
+            'videotestsrc ! appsink name=appsink')
+        self.GstAppManager.start()
+
+    def test_pull_buffer(self) -> None:
+        self.GstAppManager.pull_buffer()
