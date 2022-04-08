@@ -43,4 +43,5 @@ class GstAppManagerTests(unittest.TestCase):
         self.GstAppManager.start()
 
     def test_pull_buffer(self) -> None:
-        self.GstAppManager.pull_buffer()
+        buffer = self.GstAppManager.pull_buffer()
+        self.assertIsInstance(buffer, Gst.Buffer)

@@ -189,6 +189,10 @@ class GstAppManager(GstManager):
         """
         try:
             self.appsink = self._gst_app.get_by_name('appsink')
+            sample = self.appsink.emit('pull-sample')
+            buffer = sample.get_buffer()
         except BaseException:
             raise GstManagerError(
                 'Unable to pull the GStreamer buffer from Appsink.')
+
+        return buffer
