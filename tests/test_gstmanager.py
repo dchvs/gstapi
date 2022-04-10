@@ -12,7 +12,17 @@ except BaseException:
 else:
     _gstreamerAvailable, args = Gst.init_check(None)
 
-from gstapi.gstreamer.gstmanager import GstManager, GstAppManager
+from gstapi.gstreamer.gstmanager import GstManager, GstAppManager, GstMaps
+
+
+MOCKED_BUFFER_SIZE = 1
+
+
+class MockGstBuffer:
+    @classmethod
+    def get_buffer(cls):
+        buffer = Gst.Buffer.new_allocate(None, MOCKED_BUFFER_SIZE, None)
+        return buffer
 
 
 class GstManagerTests(unittest.TestCase):
@@ -45,3 +55,14 @@ class GstAppManagerTests(unittest.TestCase):
     def test_pull_buffer(self) -> None:
         buffer = self.GstAppManager.pull_buffer()
         self.assertIsInstance(buffer, Gst.Buffer)
+
+
+class GstMapsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.buffer = MockGstBuffer().get_buffer()
+
+    def test_map_buffer(self) -> None:
+        result, mapinfo = GstMaps().map_buffer(self.buffer)
+        self.assertTrue(True, result)
+        self.assertIsInstance(mapinfo, Gst.MapInfo)
+        self.assertTrue(mapinfo.size, MOCKED_BUFFER_SIZE)

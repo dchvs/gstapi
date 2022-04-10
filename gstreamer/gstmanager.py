@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from typing import Tuple
+
 import gi
 from gi.repository import GLib
 
@@ -17,6 +19,10 @@ class GstManagerError(RuntimeError):
 
 
 class GstAppManagerError(RuntimeError):
+    pass
+
+
+class GstMapsError(RuntimeError):
     pass
 
 
@@ -196,3 +202,61 @@ class GstAppManager(GstManager):
                 'Unable to pull the GStreamer buffer from Appsink.')
 
         return buffer
+
+
+class GstMaps:
+    """
+    Class that does GStreamer mapping operations.
+
+    ...
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+    map_buffer(Gst.Buffer : buffer)
+        Make the GStreamer buffer mapping.
+
+    Raises
+    ------
+    GstMapsError
+        This class custom exception.
+    """
+
+    def __init__(self):
+        """
+         Parameters
+         ----------
+         """
+
+    @classmethod
+    def map_buffer(cls, buffer) -> Tuple[bool, Gst.MapInfo]:
+        """Make the GStreamer buffer mapping.
+
+        Parameters
+        ----------
+        buffer : Gst.Buffer
+            The GStreamer buffer to map.
+
+        Returns
+        -------
+        result, mapinfo : Tuple[bool, Gst.MapInfo]
+            Mapping success result and map info with data mapped for reading.
+
+        Raises
+        ------
+        GstMapsError
+            If unable to make the GStreamer buffer mapping.
+        """
+        try:
+            result, mapinfo = buffer.map(Gst.MapFlags.READ)
+
+        except BaseException:
+            raise GstMapsError(
+                'Unable to make the GStreamer buffer mapping.')
+
+        finally:
+            buffer.unmap(mapinfo)
+
+        return result, mapinfo
