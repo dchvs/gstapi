@@ -203,6 +203,29 @@ class GstAppManager(GstManager):
 
         return buffer
 
+    def push_buffer(self, buffer):
+        """ Push the GStreamer buffer to Appsrc.
+
+        Parameters
+        ----------
+        buffer : Gst.Buffer
+            The GStreamer application buffer.
+
+        Returns
+        -------
+
+        Raises
+        ------
+        GstAppManagerError
+            If unable to push the GStreamer buffer to Appsrc.
+        """
+        try:
+            self.appsrc = self._gst_app.get_by_name('appsrc')
+            self.appsrc.emit('push-buffer', buffer)
+        except BaseException:
+            raise GstManagerError(
+                'Unable to pull the GStreamer buffer from Appsrc.')
+
 
 class GstMaps:
     """

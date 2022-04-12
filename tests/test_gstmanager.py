@@ -49,12 +49,16 @@ class GstManagerTests(unittest.TestCase):
 class GstAppManagerTests(unittest.TestCase):
     def setUp(self) -> None:
         self.GstAppManager = GstAppManager(
-            'videotestsrc ! appsink name=appsink')
+            'videotestsrc ! appsink name=appsink appsrc name=appsrc')
         self.GstAppManager.start()
+        self.buffer = MockGstBuffer().get_buffer()
 
     def test_pull_buffer(self) -> None:
         buffer = self.GstAppManager.pull_buffer()
         self.assertIsInstance(buffer, Gst.Buffer)
+
+    def test_push_buffer(self) -> None:
+        self.GstAppManager.push_buffer(self.buffer)
 
 
 class GstMapsTests(unittest.TestCase):
