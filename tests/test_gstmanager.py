@@ -58,6 +58,12 @@ class GstAppManagerTests(unittest.TestCase):
         buffer = self.GstAppManager.pull_buffer()
         self.assertIsInstance(buffer, Gst.Buffer)
 
+    def test_pull_buffer_with_callback(self) -> None:
+        callback = MagicMock()
+        self.GstAppManager.pull_buffer.add_callback(callback)
+        self.GstAppManager.pull_buffer()
+        callback.assert_called()
+
     def test_push_buffer(self) -> None:
         self.GstAppManager.push_buffer(self.buffer)
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from callbacks import supports_callbacks
 from typing import Tuple
 
 import gi
@@ -187,6 +188,7 @@ class GstAppManager(GstManager):
         self.appsrc = self._gst_app.get_by_name('appsrc' + pipeline_index)
         self.appsink = self._gst_app.get_by_name('appsink' + pipeline_index)
 
+    @supports_callbacks
     def pull_buffer(self):
         """ Pull the GStreamer buffer from Appsink.
 
