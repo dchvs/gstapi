@@ -47,6 +47,14 @@ class GstManagerTests(unittest.TestCase):
         self.assertIsInstance(self.GstManager.get_state(), Gst.State)
 
 
+class MockPulledBuffersClient():
+    def __init__(self, GstAppManager):
+        self.GstAppManager = GstAppManager
+
+    def __call__(self):
+        return self.GstAppManager.pulled_buffer
+
+
 class GstAppManagerTests(unittest.TestCase):
     def setUp(self) -> None:
         self.GstAppManager = GstAppManager(
@@ -59,10 +67,24 @@ class GstAppManagerTests(unittest.TestCase):
         self.assertIsInstance(buffer, Gst.Buffer)
 
     def test_pull_buffer_with_callback(self) -> None:
-        callback = MagicMock()
-        self.GstAppManager.pull_buffer.add_callback(callback)
-        self.GstAppManager.pull_buffer()
-        callback.assert_called()
+        pulled_buffer_client_callback = unittest.mock.create_autospec(
+            MockPulledBuffersClient(self.GstAppManager))
+        self.GstAppManager.pull_buffer.add_callback(
+            pulled_buffer_client_callback)
+        self.buffer = self.GstAppManager.pull_buffer()
+
+        # Check the callback was called.
+        pulled_buffer_client_callback.assert_called()
+
+        pulled_buffer_client_callback = MockPulledBuffersClient(
+            self.GstAppManager)
+        self.GstAppManager.pull_buffer.add_callback(
+            pulled_buffer_client_callback)
+        self.buffer = self.GstAppManager.pull_buffer()
+
+        # Check the returned buffer from callable method has the buffer than
+        # its client got from it.
+        self.assertEqual(self.buffer, pulled_buffer_client_callback.__call__())
 
     def test_push_buffer(self) -> None:
         self.GstAppManager.push_buffer(self.buffer)

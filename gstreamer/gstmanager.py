@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from callbacks import supports_callbacks
+from contextlib import contextmanager
 from typing import Tuple
 
 import gi
@@ -172,6 +173,11 @@ class GstAppManager(GstManager):
 
     def __init__(self, desc):
         """
+         Attributes
+         ----------
+         pulled_buffer : Gst.Buffer
+            The GStreamer AppSink buffer bound for callbacks.
+
          Parameters
          ----------
          desc : str
@@ -187,6 +193,8 @@ class GstAppManager(GstManager):
 
         self.appsrc = self._gst_app.get_by_name('appsrc' + pipeline_index)
         self.appsink = self._gst_app.get_by_name('appsink' + pipeline_index)
+
+        self.pulled_buffer = None
 
     @supports_callbacks
     def pull_buffer(self):
@@ -207,12 +215,12 @@ class GstAppManager(GstManager):
         """
         try:
             sample = self.appsink.emit('pull-sample')
-            buffer = sample.get_buffer()
+            self.pulled_buffer = sample.get_buffer()
         except BaseException:
             raise GstManagerError(
                 'Unable to pull the GStreamer buffer from Appsink.')
 
-        return buffer
+        return self.pulled_buffer
 
     def push_buffer(self, buffer):
         """ Push the GStreamer buffer to Appsrc.
