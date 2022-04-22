@@ -13,7 +13,7 @@ except BaseException:
 else:
     _gstreamerAvailable, args = Gst.init_check(None)
 
-from gstapi.gstreamer.gstmanager import GstManager, GstAppManager, GstMaps
+from gstapi.gstreamer.gstmanager import GstManager, GstAppManager, GstMaps, GstRecording
 
 
 MOCKED_BUFFER_SIZE = 1
@@ -102,3 +102,11 @@ class GstMapsTests(unittest.TestCase):
         self.assertTrue(True, result)
         self.assertIsInstance(mapinfo, Gst.MapInfo)
         self.assertTrue(mapinfo.size, MOCKED_BUFFER_SIZE)
+
+
+class GstRecordingTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.GstRecording = GstRecording()
+
+    def test_make_recording(self) -> None:
+        self.GstRecording.make_recording()

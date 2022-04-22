@@ -28,6 +28,10 @@ class GstMapsError(RuntimeError):
     pass
 
 
+class GstRecordingError(RuntimeError):
+    pass
+
+
 class GstManager:
     """
     Class that does the GStreamer operations.
@@ -324,3 +328,78 @@ class GstMaps:
             buffer.unmap(mapinfo)
 
         return result, mapinfo
+
+
+class GstEvents(GstManager):
+    """
+    Class that handles GStreamer events.
+
+    ...
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    Raises
+    ------
+    GstRecordingError
+        This class custom exception.
+    """
+
+    def __init__(self, desc):
+        """
+         Parameters
+         ----------
+         desc : str
+         """
+        super().__init__(desc)
+
+
+class GstRecording(GstEvents):
+    """
+    Class that does GStreamer recording operations.
+
+    ...
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+
+    Raises
+    ------
+    GstRecordingError
+        This class custom exception.
+    """
+
+    def __init__(self):
+        """
+         Parameters
+         ----------
+         """
+        desc = 'videotestsrc num-buffers=10 ! x264enc ! mpegtsmux ! filesink location=dinitahouse.ts'
+        super().__init__(desc)
+
+    def make_recording(self) -> None:
+        """Make the GStreamer buffer mapping.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        GstRecordingError
+            If unable to make the recording.
+        """
+        try:
+            self.start()
+        except BaseException:
+            raise GstMapsError(
+                'Unable to make the recording.')
