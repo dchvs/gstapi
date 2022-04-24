@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import time
 import unittest
 from unittest.mock import MagicMock
 
@@ -104,9 +104,31 @@ class GstMapsTests(unittest.TestCase):
         self.assertTrue(mapinfo.size, MOCKED_BUFFER_SIZE)
 
 
+class MockGstRecordingClient:
+    def __init__(self, GstVideoTestSrcAppSink, GstRecording):
+        self.GstVideoTestSrcAppSink = GstVideoTestSrcAppSink
+        self.GstRecording = GstRecording
+
+    def __call__(self):
+        self.GstRecording.push_buffer(
+            self.GstVideoTestSrcAppSink.pulled_buffer)
+        self.GstRecording.make_recording()
+
+
 class GstRecordingTests(unittest.TestCase):
     def setUp(self) -> None:
         self.GstRecording = GstRecording()
+        self.GstRecording.start()
+
+        self.GstVideoTestSrcAppSink = GstAppManager(
+            'videotestsrc ! appsink name=appsink emit-signals=true')
+        self.GstVideoTestSrcAppSink.start()
+
+        pulled_buffer_client_callback = MockGstRecordingClient(
+            self.GstVideoTestSrcAppSink, self.GstRecording)
+        self.GstVideoTestSrcAppSink.pull_buffer.add_callback(
+            pulled_buffer_client_callback)
+        self.GstVideoTestSrcAppSink.pull_buffer()
 
     def test_make_recording(self) -> None:
         self.GstRecording.make_recording()

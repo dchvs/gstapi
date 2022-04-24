@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from callbacks import supports_callbacks
-from contextlib import contextmanager
+from datetime import datetime
 from typing import Tuple
 
 import gi
@@ -330,7 +330,7 @@ class GstMaps:
         return result, mapinfo
 
 
-class GstEvents(GstManager):
+class GstEvents(GstAppManager):
     """
     Class that handles GStreamer events.
 
@@ -381,7 +381,8 @@ class GstRecording(GstEvents):
          Parameters
          ----------
          """
-        desc = 'videotestsrc num-buffers=10 ! x264enc ! mpegtsmux ! filesink location=dinitahouse.ts'
+        desc = 'appsrc name=appsrc ! x264enc ! mpegtsmux ! filesink location=dinitahouse_{time}.ts'.format(
+            time=datetime.now().strftime("%d_%m_%Y_%I:%M:%S_%p"))
         super().__init__(desc)
 
     def make_recording(self) -> None:
