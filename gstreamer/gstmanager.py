@@ -111,7 +111,7 @@ class GstManager:
         """
         try:
             self._gst_app.set_state(Gst.State.PLAYING)
-            GLib.MainLoop().run()
+            # GLib.MainLoop().run()
         except BaseException:
             GstManagerError('Unable to start the GStreamer application')
 
@@ -128,7 +128,7 @@ class GstManager:
         """
         try:
             self._gst_app.set_state(Gst.State.NULL)
-            GLib.MainLoop().quit()
+            # GLib.MainLoop().quit()
         except BaseException:
             GstManagerError('Unable to stop the GStreamer application')
 
@@ -199,6 +199,7 @@ class GstAppManager(GstManager):
         self.appsink = self._gst_app.get_by_name('appsink' + pipeline_index)
 
         self.pulled_buffer = None
+        self._pull_buffer_callback = None
 
     @supports_callbacks
     def pull_buffer(self):
@@ -224,6 +225,8 @@ class GstAppManager(GstManager):
             raise GstManagerError(
                 'Unable to pull the GStreamer buffer from Appsink.')
 
+        print("@pull_buffer")
+        # return Gst.FlowReturn.OK
         return self.pulled_buffer
 
     def push_buffer(self, buffer):
@@ -263,13 +266,24 @@ class GstAppManager(GstManager):
             If unable to install the callback to AppSink to pull the buffers.
         """
         try:
-            def _pull_buffer_callback(
-                appsink=None, data=None): return Gst.FlowReturn.OK
-            _pull_buffer_callback.pull_buffer = self.pull_buffer()
-            self.appsink.connect('new-sample', _pull_buffer_callback, None)
+            def _pull_buffer_callback(appsink=None, data=None):
+                print("auch1!")
+                self.pull_buffer()
+
+                return Gst.FlowReturn.OK
+
+            self._pull_buffer_callback = _pull_buffer_callback
+            self._pull_buffer_callback.pull_buffer = self.pull_buffer
+            # self._pull_buffer_callback, None) #
+            self.appsink.connect(
+                'new-sample', self._pull_buffer_callback, None)
         except BaseException:
             raise GstManagerError(
                 'Unable to install the callback to AppSink to pull the buffers.')
+
+    def _x(self, appsink=None, data=None):
+        print("auch!")
+        return Gst.FlowReturn.OK
 
 
 class GstMaps:
@@ -357,7 +371,7 @@ class GstEvents(GstAppManager):
         super().__init__(desc)
 
 
-class GstRecording(GstEvents):
+class GstRecording(GstAppManager):
     """
     Class that does GStreamer recording operations.
 
@@ -381,7 +395,9 @@ class GstRecording(GstEvents):
          Parameters
          ----------
          """
-        desc = 'appsrc name=appsrc ! x264enc ! mpegtsmux ! filesink location=dinitahouse_{time}.ts'.format(
+        # videotestsrc num-buffers=10 is-live=true
+        # appsrc is-live=true name=appsrc
+        desc = 'appsrc is-live=true name=appsrc ! x264enc ! mpegtsmux ! filesink async=false location=dinitahouse_{time}.ts'.format(
             time=datetime.now().strftime("%d_%m_%Y_%I:%M:%S_%p"))
         super().__init__(desc)
 
