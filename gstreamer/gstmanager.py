@@ -152,6 +152,11 @@ class GstAppManager(GstManager):
 
     Attributes
     ----------
+    appsrc : Gst.Element
+        GStreamer AppSrc element instance.
+
+    appsink : Gst.Element
+        GStreamer AppSink element instance.
 
     Methods
     -------
@@ -177,6 +182,11 @@ class GstAppManager(GstManager):
 
         super().__init__(desc)
 
+        pipeline_index = self._gst_app.name.replace('pipeline', '')
+
+        self.appsrc = self._gst_app.get_by_name('appsrc' + pipeline_index)
+        self.appsink = self._gst_app.get_by_name('appsink' + pipeline_index)
+
     def pull_buffer(self):
         """ Pull the GStreamer buffer from Appsink.
 
@@ -194,7 +204,6 @@ class GstAppManager(GstManager):
             If unable to pull the GStreamer buffer from Appsink.
         """
         try:
-            self.appsink = self._gst_app.get_by_name('appsink')
             sample = self.appsink.emit('pull-sample')
             buffer = sample.get_buffer()
         except BaseException:
@@ -220,11 +229,33 @@ class GstAppManager(GstManager):
             If unable to push the GStreamer buffer to Appsrc.
         """
         try:
-            self.appsrc = self._gst_app.get_by_name('appsrc')
             self.appsrc.emit('push-buffer', buffer)
         except BaseException:
             raise GstManagerError(
                 'Unable to pull the GStreamer buffer from Appsrc.')
+
+    def _install_pull_buffers_callback(self):
+        """ Install the callback to AppSink to pull the buffers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        GstAppManagerError
+            If unable to install the callback to AppSink to pull the buffers.
+        """
+        try:
+            def _pull_buffer_callback(
+                appsink=None, data=None): return Gst.FlowReturn.OK
+            _pull_buffer_callback.pull_buffer = self.pull_buffer()
+            self.appsink.connect('new-sample', _pull_buffer_callback, None)
+        except BaseException:
+            raise GstManagerError(
+                'Unable to install the callback to AppSink to pull the buffers.')
 
 
 class GstMaps:

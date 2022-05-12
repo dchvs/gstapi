@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
+from unittest.mock import MagicMock
 
 import gi
 
@@ -49,7 +50,7 @@ class GstManagerTests(unittest.TestCase):
 class GstAppManagerTests(unittest.TestCase):
     def setUp(self) -> None:
         self.GstAppManager = GstAppManager(
-            'videotestsrc ! appsink name=appsink appsrc name=appsrc')
+            'videotestsrc ! appsink emit-signals=true appsrc')
         self.GstAppManager.start()
         self.buffer = MockGstBuffer().get_buffer()
 
@@ -59,6 +60,9 @@ class GstAppManagerTests(unittest.TestCase):
 
     def test_push_buffer(self) -> None:
         self.GstAppManager.push_buffer(self.buffer)
+
+    def test__install_pull_buffers_callback(self) -> None:
+        self.GstAppManager._install_pull_buffers_callback()
 
 
 class GstMapsTests(unittest.TestCase):
