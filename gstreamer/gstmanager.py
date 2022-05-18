@@ -2,10 +2,10 @@
 
 from callbacks import supports_callbacks
 from datetime import datetime
+import logging
 from typing import Tuple
 
 import gi
-from gi.repository import GLib
 
 try:
     gi.require_version('Gst', '1.0')
@@ -111,7 +111,6 @@ class GstManager:
         """
         try:
             self._gst_app.set_state(Gst.State.PLAYING)
-            # GLib.MainLoop().run()
         except BaseException:
             GstManagerError('Unable to start the GStreamer application')
 
@@ -128,7 +127,6 @@ class GstManager:
         """
         try:
             self._gst_app.set_state(Gst.State.NULL)
-            # GLib.MainLoop().quit()
         except BaseException:
             GstManagerError('Unable to stop the GStreamer application')
 
@@ -201,6 +199,9 @@ class GstAppManager(GstManager):
         self.pulled_buffer = None
         self._pull_buffer_callback = None
 
+        # Enable to pull buffers when added a callback to it.
+        self._install_pull_buffers_callback()
+
     @supports_callbacks
     def pull_buffer(self):
         """ Pull the GStreamer buffer from Appsink.
@@ -225,8 +226,7 @@ class GstAppManager(GstManager):
             raise GstManagerError(
                 'Unable to pull the GStreamer buffer from Appsink.')
 
-        print("@pull_buffer")
-        # return Gst.FlowReturn.OK
+        logging.debug("pull_buffer: GstAppManager.pull_bufffer called.")
         return self.pulled_buffer
 
     def push_buffer(self, buffer):
@@ -267,23 +267,17 @@ class GstAppManager(GstManager):
         """
         try:
             def _pull_buffer_callback(appsink=None, data=None):
-                print("auch1!")
                 self.pull_buffer()
-
                 return Gst.FlowReturn.OK
 
             self._pull_buffer_callback = _pull_buffer_callback
             self._pull_buffer_callback.pull_buffer = self.pull_buffer
-            # self._pull_buffer_callback, None) #
+
             self.appsink.connect(
-                'new-sample', self._pull_buffer_callback, None)
+                'new-sample', self._pull_buffer_callback, self.appsink)
         except BaseException:
             raise GstManagerError(
                 'Unable to install the callback to AppSink to pull the buffers.')
-
-    def _x(self, appsink=None, data=None):
-        print("auch!")
-        return Gst.FlowReturn.OK
 
 
 class GstMaps:
