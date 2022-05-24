@@ -200,7 +200,8 @@ class GstAppManager(GstManager):
         self._pull_buffer_callback = None
 
         # Enable to pull buffers when added a callback to it.
-        self._install_pull_buffers_callback()
+        if self.appsink is not None:
+            self._install_pull_buffers_callback()
 
     @supports_callbacks
     def pull_buffer(self):
@@ -388,10 +389,10 @@ class GstRecording(GstAppManager):
         """
          Parameters
          ----------
-         """
+        """
         # videotestsrc num-buffers=10 is-live=true
         # appsrc is-live=true name=appsrc
-        desc = 'appsrc is-live=true name=appsrc ! x264enc ! mpegtsmux ! filesink async=false location=dinitahouse_{time}.ts'.format(
+        desc = 'appsrc ! x264enc ! mpegtsmux ! filesink location=dinitahouse_{time}.ts'.format(
             time=datetime.now().strftime("%d_%m_%Y_%I:%M:%S_%p"))
         super().__init__(desc)
 

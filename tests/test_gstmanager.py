@@ -109,54 +109,21 @@ class MockGstRecordingClient:
         self.GstRecording = GstRecording
 
     def __call__(self):
-        self.GstRecording.make_recording()
-        print(
-            "self.GstRecording.get_state() => ",
-            self.GstRecording.get_state())
-        self.GstRecording.push_buffer(
-            self.GstVideoTestSrcAppSink.pulled_buffer)
-        self.GstRecording.get_state()
-        print(
-            "self.GstRecording.get_state() => ",
-            self.GstRecording.get_state())
-        print("appsink: received buffer")
-
-
-try:
-    gi.require_version('Gst', '1.0')
-    from gi.repository import Gst
-except BaseException:
-    _gstreamerAvailable = False
-else:
-    _gstreamerAvailable, args = Gst.init_check(None)
+        print("", self.__class__.__name__, ": pulled_buffer => ",
+              self.GstVideoTestSrcAppSink.pulled_buffer)
 
 
 class GstRecordingTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.__class__.mainloop = GLib.MainLoop()
-
-        self.GstRecording = GstRecording()
-
         self.GstVideoTestSrcAppSink = GstAppManager(
-            'videotestsrc num-buffers=25 is-live=true ! appsink max-buffers=4 drop=true name=appsink emit-signals=true')
+            'videotestsrc ! appsink emit-signals=true')
         self.GstVideoTestSrcAppSink.start()
 
         pulled_buffer_client_callback = MockGstRecordingClient(
-            self.GstVideoTestSrcAppSink, self.GstRecording)
+            self.GstVideoTestSrcAppSink, None)
 
-        self.GstVideoTestSrcAppSink._install_pull_buffers_callback()
-        self.GstVideoTestSrcAppSink._pull_buffer_callback.pull_buffer.add_callback(
+        self.GstVideoTestSrcAppSink.pull_buffer.add_callback(
             pulled_buffer_client_callback)
 
-        self.__class__.mainloop.run()
-
     def test_make_recording(self) -> None:
-        print("make_recording")
-        ctx = self.__class__.mainloop.get_context()
-        #print ("ctx.pending() => ", ctx.pending())
-
-        # time.sleep(2)
-        #
-
-    def tearDown(self) -> None:
-        self.__class__.mainloop.quit()
+        time.sleep(1)
