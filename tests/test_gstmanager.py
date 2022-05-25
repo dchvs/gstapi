@@ -124,7 +124,7 @@ class GstRecordingTests(unittest.TestCase):
         self.buffer = MockGstBuffer.get_buffer()
 
         self.GstVideoTestSrcAppSink = GstAppSinkManager(
-            "videotestsrc ! appsink emit-signals=true")
+            "videotestsrc is-live=true ! videoconvert ! videoscale ! video/x-raw,width=320,height=240,format=RGB ! queue ! appsink max-buffers=3 drop=true emit-signals=true")
         self.GstVideoTestSrcAppSink.start()
 
         cb_mock_rec_client = MockGstRecordingClient(

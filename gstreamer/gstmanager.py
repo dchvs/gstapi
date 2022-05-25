@@ -560,8 +560,9 @@ class GstRecording(GstAppSrcManager):
          Parameters
          ----------
         """
-        desc = 'appsrc do-timestamp=true format=time ! x264enc ! mpegtsmux ! filesink location=dinitahouse_{time}.ts'.format(
+        desc = 'appsrc max-bytes=26035200 is-live=true do-timestamp=true format=3 caps="video/x-raw,width=320,height=240,pixel-aspect-ratio=1/1,format=RGB" ! videoconvert ! avenc_mpeg4 ! identity dump=true silent=false ! mpegtsmux ! queue ! filesink sync=false async=false qos=false location=dinitahouse_{time}.ts'.format(
             time=datetime.now().strftime("%d_%m_%Y_%I:%M:%S_%p"))
+
         super().__init__(desc)
 
     def make_recording(self) -> None:
