@@ -16,7 +16,7 @@ except BaseException:
 else:
     _gstreamerAvailable, args = Gst.init_check(None)
 
-from gstapi.gstreamer.gstmanager import GstManager, GstAppManager, GstMaps, GstRecording
+from gstapi.gstreamer.gstmanager import GstManager, GstAppManager, GstAppSinkManager, GstAppSrcManager, GstMaps, GstRecording
 
 
 MOCKED_BUFFER_SIZE = 1
@@ -112,18 +112,25 @@ class MockGstRecordingClient:
         print("", self.__class__.__name__, ": pulled_buffer => ",
               self.GstVideoTestSrcAppSink.pulled_buffer)
 
+        self.GstRecording.push_buffer(
+            self.GstVideoTestSrcAppSink.pulled_buffer)
+
 
 class GstRecordingTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.GstVideoTestSrcAppSink = GstAppManager(
-            'videotestsrc ! appsink emit-signals=true')
+        self.GstRecording = GstRecording()
+        self.GstRecording.start()
+
+        self.buffer = MockGstBuffer.get_buffer()
+
+        self.GstVideoTestSrcAppSink = GstAppSinkManager(
+            "videotestsrc ! appsink emit-signals=true")
         self.GstVideoTestSrcAppSink.start()
 
-        pulled_buffer_client_callback = MockGstRecordingClient(
-            self.GstVideoTestSrcAppSink, None)
-
+        cb_mock_rec_client = MockGstRecordingClient(
+            self.GstVideoTestSrcAppSink, self.GstRecording)
         self.GstVideoTestSrcAppSink.pull_buffer.add_callback(
-            pulled_buffer_client_callback)
+            cb_mock_rec_client)
 
     def test_make_recording(self) -> None:
         time.sleep(1)

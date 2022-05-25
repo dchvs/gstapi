@@ -281,6 +281,176 @@ class GstAppManager(GstManager):
                 'Unable to install the callback to AppSink to pull the buffers.')
 
 
+class GstAppSinkManager(GstManager):
+    """
+    Class that does the GStreamer operations for applications with fed buffers.
+
+    ...
+
+    Attributes
+    ----------
+    appsink : Gst.Element
+        GStreamer AppSink element instance.
+
+    Methods
+    -------
+    pull_buffer()
+        Pull the GStreamer buffer from Appsink.
+
+    Raises
+    ------
+    GstAppManagerError
+        This class custom exception.
+    """
+
+    def __init__(self, desc):
+        """
+         Attributes
+         ----------
+         pulled_buffer : Gst.Buffer
+            The GStreamer AppSink buffer bound for callbacks.
+
+         Parameters
+         ----------
+         desc : str
+            The GStreamer pipeline description.
+
+        _gst_app : Gst.Pipeline
+            The GStreamer application object.
+         """
+
+        super().__init__(desc)
+
+        self.appsink = self._gst_app.get_by_name('appsink0')
+
+        self.pulled_buffer = None
+        self._pull_buffer_callback = None
+
+        # Enable to pull buffers when added a callback to it.
+        if self.appsink is not None:
+            self._install_pull_buffers_callback()
+
+    @supports_callbacks
+    def pull_buffer(self):
+        """ Pull the GStreamer buffer from Appsink.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        buffer : Gst.Buffer
+            The GStreamer application buffer.
+
+        Raises
+        ------
+        GstAppManagerError
+            If unable to pull the GStreamer buffer from Appsink.
+        """
+        try:
+            sample = self.appsink.emit('pull-sample')
+            self.pulled_buffer = sample.get_buffer()
+        except BaseException:
+            raise GstManagerError(
+                'Unable to pull the GStreamer buffer from Appsink.')
+
+        logging.debug("pull_buffer: GstAppManager.pull_bufffer called.")
+        return self.pulled_buffer
+
+    def _install_pull_buffers_callback(self):
+        """ Install the callback to AppSink to pull the buffers.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Raises
+        ------
+        GstAppManagerError
+            If unable to install the callback to AppSink to pull the buffers.
+        """
+        try:
+            def _pull_buffer_callback(appsink=None, data=None):
+                self.pull_buffer()
+                return Gst.FlowReturn.OK
+
+            self._pull_buffer_callback = _pull_buffer_callback
+            self._pull_buffer_callback.pull_buffer = self.pull_buffer
+
+            self.appsink.connect(
+                'new-sample', self._pull_buffer_callback, self.appsink)
+        except BaseException:
+            raise GstManagerError(
+                'Unable to install the callback to AppSink to pull the buffers.')
+
+
+class GstAppSrcManager(GstManager):
+    """
+    Class that does the GStreamer operations for applications with fed buffers.
+
+    ...
+
+    Attributes
+    ----------
+    appsrc : Gst.Element
+        GStreamer AppSrc element instance.
+
+    Methods
+    -------
+    push_buffer()
+        Push the GStreamer buffer from Appsink.
+
+    Raises
+    ------
+    GstAppManagerError
+        This class custom exception.
+    """
+
+    def __init__(self, desc):
+        """
+         Attributes
+         ----------
+         pulled_buffer : Gst.Buffer
+            The GStreamer AppSink buffer bound for callbacks.
+
+         Parameters
+         ----------
+         desc : str
+            The GStreamer pipeline description.
+
+        _gst_app : Gst.Pipeline
+            The GStreamer application object.
+         """
+
+        super().__init__(desc)
+
+        self.appsrc = self._gst_app.get_by_name('appsrc0')
+
+    def push_buffer(self, buffer):
+        """ Push the GStreamer buffer to Appsrc.
+
+        Parameters
+        ----------
+        buffer : Gst.Buffer
+            The GStreamer application buffer.
+
+        Returns
+        -------
+
+        Raises
+        ------
+        GstAppManagerError
+            If unable to push the GStreamer buffer to Appsrc.
+        """
+        try:
+            self.appsrc.emit('push-buffer', buffer)
+        except BaseException:
+            raise GstManagerError(
+                'Unable to pull the GStreamer buffer from Appsrc.')
+
+
 class GstMaps:
     """
     Class that does GStreamer mapping operations.
@@ -366,7 +536,7 @@ class GstEvents(GstAppManager):
         super().__init__(desc)
 
 
-class GstRecording(GstAppManager):
+class GstRecording(GstAppSrcManager):
     """
     Class that does GStreamer recording operations.
 
@@ -390,9 +560,7 @@ class GstRecording(GstAppManager):
          Parameters
          ----------
         """
-        # videotestsrc num-buffers=10 is-live=true
-        # appsrc is-live=true name=appsrc
-        desc = 'appsrc ! x264enc ! mpegtsmux ! filesink location=dinitahouse_{time}.ts'.format(
+        desc = 'appsrc do-timestamp=true format=time ! x264enc ! mpegtsmux ! filesink location=dinitahouse_{time}.ts'.format(
             time=datetime.now().strftime("%d_%m_%Y_%I:%M:%S_%p"))
         super().__init__(desc)
 
