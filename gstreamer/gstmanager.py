@@ -2,6 +2,7 @@
 
 from callbacks import supports_callbacks
 from datetime import datetime
+from detectionapi.detection.detection import YoloV5_Supported_Shape
 import logging
 from typing import Tuple
 
@@ -15,6 +16,8 @@ except BaseException:
 else:
     _gstreamerAvailable, args = Gst.init_check(None)
 
+
+time = datetime.now().strftime("%d_%m_%Y_%I:%M:%S_%p")
 
 class GstManagerError(RuntimeError):
     pass
@@ -558,8 +561,9 @@ class GstRecording(GstAppSrcManager):
          Parameters
          ----------
         """
-        desc = 'appsrc max-bytes=26035200 is-live=true do-timestamp=true format=3 caps="video/x-raw,width=320,height=240,pixel-aspect-ratio=1/1,format=RGB" ! videoconvert ! avenc_mpeg4 ! identity dump=true silent=false ! mpegtsmux ! queue ! filesink sync=false async=false qos=false location=dinitahouse_{time}.ts'.format(
-            time=datetime.now().strftime("%d_%m_%Y_%I:%M:%S_%p"))
+        desc = (f'appsrc max-bytes=26035200 is-live=true do-timestamp=true format=3 '
+            f' caps="video/x-raw,width={YoloV5_Supported_Shape.Width},height={YoloV5_Supported_Shape.Height},pixel-aspect-ratio=1/1,framerate=30/1,format=RGB"'
+            f' ! videoscale ! videoconvert ! avenc_mpeg4 ! identity dump=false silent=true ! mpegtsmux ! queue ! filesink sync=false async=false qos=false location=dinitahouse_{time}.ts')
 
         super().__init__(desc)
 
