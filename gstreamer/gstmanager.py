@@ -478,7 +478,7 @@ class GstMaps:
          """
 
     @classmethod
-    def map_buffer(cls, buffer) -> Tuple[bool, Gst.MapInfo]:
+    def map_buffer(cls, buffer, map_flags) -> Tuple[bool, Gst.MapInfo]:
         """Make the GStreamer buffer mapping.
 
         Parameters
@@ -497,14 +497,12 @@ class GstMaps:
             If unable to make the GStreamer buffer mapping.
         """
         try:
-            result, mapinfo = buffer.map(Gst.MapFlags.READ)
+            map_buf_obj = buffer.get_all_memory()
+            result, mapinfo = map_buf_obj.map(map_flags)
 
         except BaseException:
             raise GstMapsError(
                 'Unable to make the GStreamer buffer mapping.')
-
-        finally:
-            buffer.unmap(mapinfo)
 
         return result, mapinfo
 
