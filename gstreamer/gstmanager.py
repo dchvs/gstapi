@@ -284,6 +284,58 @@ class GstAppManager(GstManager):
                 'Unable to install the callback to AppSink to pull the buffers.')
 
 
+class GstDict(dict):
+    """
+    Class that does represents a dictionary.
+
+    ...
+
+    Attributes
+    ----------
+    self : dict
+        This dictionary instance.
+
+    Methods
+    -------
+    insert(key : int, value : Any)
+        Method to insert into dictionary.
+
+    Raises
+    ------
+    """
+    def __init__(self):
+        self = dict()
+
+    def insert(self, key, value):
+        self[key] = value
+
+
+class GstStreamHandler(GstDict):
+    """
+    Class that represents a dict. of GStreamer stream objects.
+
+    ...
+
+    Attributes
+    ----------
+    stream_dict : GstDict
+        Dictionary instance to hold GStreamer stream objects.
+
+    Methods
+    -------
+    insert(int : key, [Gst.Pipeline : gst_stream_obj | GstAppSinkManager : gst_stream_obj])
+        Method to insert into dictionary the GStreamer stream object.
+
+    Raises
+    ------
+    """
+    def __init__(self):
+        self.stream_dict = super()
+
+    def insert(self, key, gst_stream_obj):
+        self.stream_dict.insert(key, gst_stream_obj)
+
+
 class GstAppSinkManager(GstManager):
     """
     Class that does the GStreamer operations for applications with fed buffers.

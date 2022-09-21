@@ -16,7 +16,8 @@ except BaseException:
 else:
     _gstreamerAvailable, args = Gst.init_check(None)
 
-from gstapi.gstreamer.gstmanager import GstManager, GstAppManager, GstAppSinkManager, GstAppSrcManager, GstMaps, GstRecording
+from gstapi.gstreamer.gstmanager import GstManager, GstAppManager, GstAppSinkManager, GstAppSrcManager, GstMaps, GstRecording, \
+    GstStreamHandler
 
 
 MOCKED_BUFFER_SIZE = 1
@@ -134,3 +135,20 @@ class GstRecordingTests(unittest.TestCase):
 
     def test_make_recording(self) -> None:
         time.sleep(1)
+
+
+class GstStreamHandlerTests(unittest.TestCase):
+    def setUp(self) -> None:
+        desc_appsink = "videotestsrc is-live=true ! videoconvert ! videoscale ! video/x-raw,width=320,height=240,format=RGB ! queue ! appsink max-buffers=3 drop=true emit-signals=true"
+        self.gst_app_sink_manager1 = GstAppSinkManager(desc_appsink)
+        self.gst_app_sink_manager2 = GstAppSinkManager(desc_appsink)
+        self.gst_app_sink_manager3 = GstAppSinkManager(desc_appsink)
+        self.gst_stream_handler = GstStreamHandler()
+
+    def test_insert(self):
+        self.gst_stream_handler.insert(1, self.gst_app_sink_manager1)
+        self.gst_stream_handler.insert(2, self.gst_app_sink_manager2)
+        self.gst_stream_handler.insert(3, self.gst_app_sink_manager3)
+
+        # Check if insertion consisted on GStreamer stream object.
+        self.assertTrue({GstAppSinkManager} == set(map(type, self.gst_stream_handler.values())))
